@@ -5,8 +5,8 @@ import torchvision.transforms as T
 
 class PairedGrayDataset(Dataset):
     def __init__(self, root, phase='train', loadSize=1024):
-        self.a_dir = os.path.join(root, phase, 'imgs')
-        self.b_dir = os.path.join(root, phase, 'targets')
+        self.a_dir = os.path.join(root, phase, 'A')
+        self.b_dir = os.path.join(root, phase, 'B')
         self.files = sorted(os.listdir(self.a_dir))
         self.transformA = T.Compose([
             T.Resize((loadSize, loadSize)),
