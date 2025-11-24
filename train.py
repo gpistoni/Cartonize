@@ -72,7 +72,7 @@ if __name__ == '__main__':
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     os.makedirs(args.out_dir, exist_ok=True)
 
-    dataset = PairedGrayDataset(args.dataroot, 'train', loadSize=args.loadSize)
+    dataset = PairedGrayDataset(args.dataroot, 'Train', loadSize=args.loadSize)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
     G = Pix2PixHDGenerator(in_ch=1, out_ch=1).to(device)
