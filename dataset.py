@@ -10,7 +10,7 @@ class PairedGrayDataset(Dataset):
         self.files = sorted(os.listdir(self.a_dir))
         self.transformA = T.Compose([
             T.Resize((loadSize, loadSize)),
-            T.RandomHorizontalFlip() if phase=='train' else T.Lambda(lambda x: x),
+            #T.RandomHorizontalFlip() if phase=='train' else T.Lambda(lambda x: x),
             T.ToTensor(),
             T.Normalize([0.5],[0.5])
         ])
