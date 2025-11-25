@@ -11,6 +11,20 @@ import sys
 import time
 from defines import *
 
+def save_checkpoint(state, filename):
+    """Salva lo stato del checkpoint su file (atomico via tmp -> rename)."""
+    tmp = filename + '.tmp'
+    torch.save(state, tmp)
+    os.replace(tmp, filename)
+
+def load_checkpoint(filename, device):
+    """Carica checkpoint se esiste, restituisce dizionario o None."""
+    if not os.path.exists(filename):
+        return None
+    checkpoint = torch.load(filename, map_location=device)
+    return checkpoint
+
+
 def save_side_by_side(real_A, fake_B, out_path, nrow=4):
     # real_A, fake_B: tensori [B,1,H,W], valori in [-1,1]
     # nrow: numero di coppie per riga
@@ -64,8 +78,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataroot', type=str,  default='/home/giulipis/Dataset/Cartonize' )
     parser.add_argument('--lr', type=float, default=2e-4)
-    parser.add_argument('--epochs', type=int, default=200)
+    parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--checkpoint', type=str, default='checkpoint.pth')
+    parser.add_argument('--resume', action='store_true', help='Riprendi dall ultimo checkpoint se presente')
     args = parser.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
@@ -89,8 +105,23 @@ if __name__ == '__main__':
 
     # Altre variabili
     ldl = len(dataloader)
+    start_epoch = 0
 
-    for epoch in range(args.epochs):
+        # -- Resume se richiesto --
+    if args.resume:
+        ckpt = load_checkpoint(args.checkpoint, device)
+        if ckpt is not None:
+            G.load_state_dict(ckpt['G_state'])
+            D.load_state_dict(ckpt['D_state'])
+            opt_G.load_state_dict(ckpt['opt_G_state'])
+            opt_D.load_state_dict(ckpt['opt_D_state'])
+            train_losses = ckpt.get('train_losses', [])
+            train_accuracies = ckpt.get('train_accuracies', [])
+            val_accuracies = ckpt.get('val_accuracies', [])
+            start_epoch = ckpt.get('epoch', 0) + 1
+            print(f"Ripreso da checkpoint {args.checkpoint}, epoch {start_epoch}")
+
+    for epoch in range(start_epoch, args.epochs):
 
         epoch_start_time = time.time()
         running_loss = 0.0                  # Accumulatore della loss per questa epoca (somma pesata)
@@ -159,3 +190,18 @@ if __name__ == '__main__':
         train_losses.append(train_loss)
 
         print(f'Epoch {epoch+1}/{args.epochs} done Train Loss: {train_loss:.4f} ')
+
+                # -- Salva checkpoint alla fine di ogni epoca --
+        ckpt_state = {
+            'epoch': epoch,
+            'G_state': G.state_dict(),
+            'D_state': D.state_dict(),
+            'opt_G_state': opt_G.state_dict(),
+            'opt_D_state': opt_D.state_dict(),
+            'train_losses': train_losses,
+            'train_accuracies': train_accuracies,
+            'val_accuracies': val_accuracies,
+            'args': vars(args)
+        }
+        save_checkpoint(ckpt_state, args.checkpoint)
+        print(f"Checkpoint salvato: {args.checkpoint}")

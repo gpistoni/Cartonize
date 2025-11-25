@@ -38,10 +38,20 @@ def split_image(image_dir, out_dir, in_name, out_name, out_folder, tile_size, ti
             box = (left, top, left + tile_size, top + tile_size)
 
             sub_image = image.crop(box).convert('L')    
+            sub_imageMirrored = ImageOps.mirror(sub_image)
+            sub_imageRotated180 = sub_image.rotate(180)
 
             # Salva la sottosezione           
             sub_image_name = out_name + f"_{top}_{left}.bmp"
             sub_image.save(os.path.join(output_folder, sub_image_name))
+            i+=1
+
+            sub_image_name = out_name + f"_{top}_{left}M.bmp"
+            sub_imageMirrored.save(os.path.join(output_folder, sub_image_name))
+            i+=1
+
+            sub_image_name = out_name + f"_{top}_{left}R.bmp"
+            sub_imageRotated180.save(os.path.join(output_folder, sub_image_name))
             i+=1
 
         
@@ -62,8 +72,8 @@ bi = 0
 for fname in image_filenames:
     if fname.startswith("MB"):  # sintetico vs1
         fnameAA = fname.replace("MB_", "MA_")
-        split_image(fullImage_dir, sample_dir, fnameAA, "img" + str(bi), "A", block_size, tile_step_MB, 2)
-        split_image(fullImage_dir, sample_dir, fname, "img" + str(bi), "B", block_size, tile_step_MB)      # half size source
+        split_image(fullImage_dir, sample_dir, fnameAA, "img" + str(bi), "A", block_size, tile_step_MB)
+        split_image(fullImage_dir, sample_dir, fname, "img" + str(bi), "B", block_size, tile_step_MB) 
         bi += 1
 
 print(f"Numero file MB+MC: {bi}")
