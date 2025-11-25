@@ -5,6 +5,7 @@ import torch
 from torchvision import transforms as T
 from torchvision.utils import save_image
 from models import Pix2PixHDGenerator
+from defines import *
 
 def load_image(path, size):
     img = Image.open(path).convert('L')
@@ -31,9 +32,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
-    os.makedirs(args.out_dir, exist_ok=True)
+    os.makedirs(trainOutput_dir, exist_ok=True)
 
-    G = Pix2PixHDGenerator(in_ch=1, out_ch=1).to(device)
+    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
     ckpt = torch.load(args.checkpoint, map_location=device)
     # if checkpoint contains state_dict under key:
     if 'state_dict' in ckpt:
@@ -56,4 +57,4 @@ if __name__ == '__main__':
             img = load_image(p, args.size).to(device)
             fake, _ = G(img)
             name = os.path.basename(p)
-            out_path = os.path.join(args.out_dir, f'cartoon_{name}')
+            out_path = os.path.join(trainOutput_dir, f'cartoon_{name}')

@@ -4,7 +4,7 @@ import os
 import torchvision.transforms as T
 
 class PairedGrayDataset(Dataset):
-    def __init__(self, root, phase='Train', loadSize=1024):
+    def __init__(self, root, phase, loadSize):
         self.a_dir = os.path.join(root, phase, 'A')
         self.b_dir = os.path.join(root, phase, 'B')
         self.files = sorted(os.listdir(self.a_dir))

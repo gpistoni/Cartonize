@@ -9,6 +9,7 @@ from dataset import PairedGrayDataset
 from losses import adversarial_loss, l1_loss, VGGLoss
 import sys
 import time
+from defines import *
 
 def save_side_by_side(real_A, fake_B, out_path, nrow=4):
     # real_A, fake_B: tensori [B,1,H,W], valori in [-1,1]
@@ -59,23 +60,21 @@ def save_side_by_side(real_A, real_B, fake_B, out_path, nrow=4):
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataroot', type=str,  default='/home/giulipis/Dataset/Cartonize' )
     parser.add_argument('--lr', type=float, default=2e-4)
     parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--loadSize', type=int, default=64)
-    parser.add_argument('--batch_size', type=int, default=512)
     parser.add_argument('--device', type=str, default='cuda')
-    parser.add_argument('--out_dir', type=str, default='/home/giulipis/Dataset/Cartonize/Output/')
     args = parser.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
-    os.makedirs(args.out_dir, exist_ok=True)
+    os.makedirs(trainOutput_dir, exist_ok=True)
 
-    dataset = PairedGrayDataset(args.dataroot, 'Train', loadSize=args.loadSize)
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    dataset = PairedGrayDataset(args.dataroot, 'Train_Samples', block_size)
+    dataloader = DataLoader(dataset, batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
-    G = Pix2PixHDGenerator(in_ch=1, out_ch=1).to(device)
+    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
     D = NLayerDiscriminator(in_ch=2).to(device)
 
     opt_G = optim.Adam(G.parameters(), lr=args.lr, betas=(0.5,0.999))
@@ -128,7 +127,7 @@ if __name__ == '__main__':
             opt_G.step()
 
             # ----- Logging -----
-            running_loss += loss_G.item() * args.batch_size
+            running_loss += loss_G.item() * batch_size
             total_train += real_A.size(0)                # Aggiorna il totale dei sample visti
             elapsed = time.time() - epoch_start_time
             samples_per_sec = total_train / elapsed if elapsed > 0 else float('inf')
@@ -141,17 +140,17 @@ if __name__ == '__main__':
             #if i % 200 == 0:
             #    out = (fake_B + 1) * 0.5  # [B,1,H,W]
             #    out_vis = out.repeat(1,3,1,1)  # duplicate for viewing
-            #    save_image(out_vis, os.path.join(args.out_dir, f'fake_epoch{epoch}_iter{i}.png'), nrow=4)
+            #    save_image(out_vis, os.path.join(trainOutput_dir, f'fake_epoch{epoch}_iter{i}.png'), nrow=4)
             #    out = (real_A + 1) * 0.5  # [B,1,H,W]
             #    out_vis = out.repeat(1,3,1,1)  # duplicate for viewing
-            #    save_image(out_vis, os.path.join(args.out_dir, f'real_epoch{epoch}_iter{i}.png'), nrow=4)
+            #    save_image(out_vis, os.path.join(trainOutput_dir, f'real_epoch{epoch}_iter{i}.png'), nrow=4)
 
              #----- Save Images -----
             if i % 200 == 0:
                 # crea una griglia e salva
                 with torch.no_grad():
                     fake_B, _ = G(real_A)   # real_A batch usato nel training
-                    save_side_by_side(real_A.cpu(), real_B.cpu(), fake_B.cpu(),  os.path.join(args.out_dir, f'compare_epoch{epoch}_iter{i}.png'), nrow=4)
+                    save_side_by_side(real_A.cpu(), real_B.cpu(), fake_B.cpu(),  os.path.join(trainOutput_dir, f'compare_epoch{epoch}_iter{i}.png'), nrow=4)
 
 
         # Calcola la loss media per sample nell'epoca

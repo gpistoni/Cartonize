@@ -30,7 +30,7 @@ class GeneratorStage(nn.Module):
     def forward(self,x): return self.model(x)
 
 class Pix2PixHDGenerator(nn.Module):
-    def __init__(self, in_ch=1, out_ch=1, ngf=64):
+    def __init__(self, in_ch, out_ch, ngf):
         super().__init__()
         self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_blocks=4)
         self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_blocks=6)
