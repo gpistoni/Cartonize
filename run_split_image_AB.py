@@ -5,7 +5,35 @@ import cv2
 import random
 import shutil
 from defines import *
+############################################################################################################################################################
+def check_couple(out_dir, out_folder1, out_folder2):
+    i=0
+    output_folderA = os.path.join(out_dir, out_folder1)
+    output_folderB = os.path.join(out_dir, out_folder2)
 
+    image_filenamesA = [x for x in os.listdir(output_folderA)] 
+    image_filenamesB = [x for x in os.listdir(output_folderB)] 
+
+    a_set = set(image_filenamesA)
+    b_set = set(image_filenamesB)
+
+    print(f"Total files: {len(image_filenamesA) + len(image_filenamesB)}")
+
+    for fname in image_filenamesA:
+        if fname not in b_set:
+            os.remove(os.path.join(output_folderA, fname))
+            i+=1
+            print(f"Removed uncoupled:", os.path.join(output_folderA, fname))
+    
+    for fname in image_filenamesB:
+        if fname not in a_set:
+            os.remove(os.path.join(output_folderB, fname))
+            i+=1
+            print(f"Removed uncoupled:", os.path.join(output_folderB, fname))
+    
+    print(f"Removed uncoupled:{i}")
+
+    
 ############################################################################################################################################################
 def split_image(image_dir, out_dir, in_name, out_name, out_folder, tile_size, tile_step, resdown=1):
     
@@ -38,27 +66,32 @@ def split_image(image_dir, out_dir, in_name, out_name, out_folder, tile_size, ti
             box = (left, top, left + tile_size, top + tile_size)
 
             sub_image = image.crop(box).convert('L')    
-            sub_imageMirrored = ImageOps.mirror(sub_image)
-            sub_imageRotated180 = sub_image.rotate(180)
+            arr = np.array(sub_image, dtype=np.float64)  # evita overflow
+            # varianza popolazione (ddof=0)
+            var_pop = np.var(arr)
+            var_norm = var_pop / (255.0**2)
 
-            # Salva la sottosezione           
-            sub_image_name = out_name + f"_{top}_{left}.bmp"
-            sub_image.save(os.path.join(output_folder, sub_image_name))
-            i+=1
+            if ( var_norm > 0.005 ):
+                sub_imageMirrored = ImageOps.mirror(sub_image)
+                sub_imageRotated180 = sub_image.rotate(180)
 
-            sub_image_name = out_name + f"_{top}_{left}M.bmp"
-            sub_imageMirrored.save(os.path.join(output_folder, sub_image_name))
-            i+=1
+                # Salva la sottosezione           
+                sub_image_name = out_name + f"_{top}_{left}.bmp"
+                sub_image.save(os.path.join(output_folder, sub_image_name))
+                i+=1
 
-            sub_image_name = out_name + f"_{top}_{left}R.bmp"
-            sub_imageRotated180.save(os.path.join(output_folder, sub_image_name))
-            i+=1
+                sub_image_name = out_name + f"_{top}_{left}M.bmp"
+                sub_imageMirrored.save(os.path.join(output_folder, sub_image_name))
+                i+=1
 
+                #sub_image_name = out_name + f"_{top}_{left}R.bmp"
+                #sub_imageRotated180.save(os.path.join(output_folder, sub_image_name))
+                #i+=1
         
     print(f"Immagine suddivisa: {image_path} in parti:{i}")
 
 ############################################################################################################################################################
-tile_step_MB = (int)(block_size * 75 / 100)
+tile_step_MB = (int)(block_size * 77 / 100)
 
 image_filenames = [x for x in os.listdir(fullImage_dir)] 
 image_filenames.sort()
@@ -75,5 +108,7 @@ for fname in image_filenames:
         split_image(fullImage_dir, sample_dir, fnameAA, "img" + str(bi), "A", block_size, tile_step_MB)
         split_image(fullImage_dir, sample_dir, fname, "img" + str(bi), "B", block_size, tile_step_MB) 
         bi += 1
+
+check_couple(sample_dir, "A", "B") 
 
 print(f"Numero file MB+MC: {bi}")

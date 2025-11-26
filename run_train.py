@@ -72,7 +72,7 @@ def save_side_by_side(real_A, real_B, fake_B, out_path, nrow=4):
     grid = make_grid(triplets, nrow=nrow, pad_value=1.0)
     save_image(grid, out_path)
 
-
+###############################################################################################################################################
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -121,7 +121,13 @@ if __name__ == '__main__':
             start_epoch = ckpt.get('epoch', 0) + 1
             print(f"Ripreso da checkpoint {args.checkpoint}, epoch {start_epoch}")
 
+    train_start_time = time.time()
+       
     for epoch in range(start_epoch, args.epochs):
+
+        hour_elapsed = (time.time() - train_start_time)/60/60;
+        if hour_elapsed > 10:
+            break;
 
         epoch_start_time = time.time()
         running_loss = 0.0                  # Accumulatore della loss per questa epoca (somma pesata)
@@ -162,7 +168,10 @@ if __name__ == '__main__':
             total_train += real_A.size(0)                # Aggiorna il totale dei sample visti
             elapsed = time.time() - epoch_start_time
             samples_per_sec = total_train / elapsed if elapsed > 0 else float('inf')
-            sys.stdout.write(f"\rSample {i}/{ldl} | processed {total_train} samples | {samples_per_sec:.2f} samples/s")
+            
+            remain_sample = real_A.size(0)*ldl*(args.epochs-epoch) - total_train
+
+            sys.stdout.write(f"\rStep {i}/{ldl} | processed {total_train} samples | {samples_per_sec:.2f} samples/s | ramain {remain_sample} samples | {remain_sample/samples_per_sec/60/60 :.2f} hours ")
             sys.stdout.flush()  
             
             #time.sleep(1)
@@ -181,7 +190,7 @@ if __name__ == '__main__':
                 # crea una griglia e salva
                 with torch.no_grad():
                     fake_B, _ = G(real_A)   # real_A batch usato nel training
-                    save_side_by_side(real_A.cpu(), real_B.cpu(), fake_B.cpu(),  os.path.join(trainOutput_dir, f'compare_epoch{epoch}_iter{i}.png'), nrow=4)
+                    save_side_by_side(real_A.cpu(), real_B.cpu(), fake_B.cpu(),  os.path.join(trainOutput_dir, f'compare_epoch{epoch}_Iter{i}.png'), nrow=4)
 
 
         # Calcola la loss media per sample nell'epoca

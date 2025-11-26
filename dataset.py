@@ -10,13 +10,18 @@ class PairedGrayDataset(Dataset):
         self.files = sorted(os.listdir(self.a_dir))
         self.transformA = T.Compose([
             T.Resize((loadSize, loadSize)),
-            #T.RandomHorizontalFlip() if phase=='Train' else T.Lambda(lambda x: x),
             T.ToTensor(),
-            #T.Normalize([0.5],[0.5])
+            T.Normalize([0.5],[0.5])
         ])        
-        self.transformB = self.transformA
+        self.transformB = T.Compose([
+            T.Resize((loadSize, loadSize)),
+            T.ToTensor(),
+            T.Normalize([0.5],[0.5])
+        ]) 
 
-    def __len__(self): return len(self.files)
+    def __len__(self): 
+        return len(self.files)
+    
     def __getitem__(self, idx):
         a = Image.open(os.path.join(self.a_dir, self.files[idx])).convert('L')
         b = Image.open(os.path.join(self.b_dir, self.files[idx])).convert('L')
