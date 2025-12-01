@@ -10,20 +10,7 @@ from losses import adversarial_loss, l1_loss, VGGLoss
 import sys
 import time
 from defines import *
-
-def save_checkpoint(state, filename):
-    """Salva lo stato del checkpoint su file (atomico via tmp -> rename)."""
-    tmp = filename + '.tmp'
-    torch.save(state, tmp)
-    os.replace(tmp, filename)
-
-def load_checkpoint(filename, device):
-    """Carica checkpoint se esiste, restituisce dizionario o None."""
-    if not os.path.exists(filename):
-        return None
-    checkpoint = torch.load(filename, map_location=device)
-    return checkpoint
-
+from utils2 import *
 
 def save_side_by_side(real_A, fake_B, out_path, nrow=4):
     # real_A, fake_B: tensori [B,1,H,W], valori in [-1,1]
@@ -79,12 +66,11 @@ if __name__ == '__main__':
     parser.add_argument('--dataroot', type=str,  default='/home/giulipis/Dataset/Cartonize' )
     parser.add_argument('--lr', type=float, default=2e-4)
     parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--checkpoint', type=str, default='checkpoint.pth')
     parser.add_argument('--resume', action='store_true', help='Riprendi dall ultimo checkpoint se presente')
     args = parser.parse_args()
 
-    device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     os.makedirs(trainOutput_dir, exist_ok=True)
 
     dataset = PairedGrayDataset(args.dataroot, 'Train_Samples', block_size)
@@ -107,7 +93,7 @@ if __name__ == '__main__':
     ldl = len(dataloader)
     start_epoch = 0
 
-        # -- Resume se richiesto --
+    # -- Resume se richiesto --
     if args.resume:
         ckpt = load_checkpoint(args.checkpoint, device)
         if ckpt is not None:

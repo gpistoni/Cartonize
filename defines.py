@@ -17,3 +17,4 @@ sample_dir_B =  os.path.join(sample_dir, "B")
 
 trainOutput_dir = os.path.join(root_dir, "Train_Output" )
 
+checkpoint_file ="checkpoint.pth"

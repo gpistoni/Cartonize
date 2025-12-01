@@ -1,5 +1,6 @@
 import torch, torch.nn as nn
 import torch.nn.functional as F
+import os
 
 class ResBlock(nn.Module):
     def __init__(self, dim):
@@ -56,3 +57,5 @@ class NLayerDiscriminator(nn.Module):
         seq += [nn.Conv2d(nf, 1, kw,1,pad)]
         self.model = nn.Sequential(*seq)
     def forward(self,x): return self.model(x)
+
+

@@ -4,41 +4,53 @@ import onnx
 import onnxruntime
 import numpy as np
 from utils import getFilemodel, exportModelOnnx, getFileOnnx, quantizeModelOnnx
-from pix2pix import initialize_model
 from onnxruntime.quantization import quantize_dynamic, QuantType,  QuantFormat, quantize_static
-#from onnxruntime.quantization import CalibrationDataReader
 from onnxconverter_common import float16
 from datetime import datetime
 from torch.utils.data import DataLoader
 import torch.nn.utils.prune as prune
 from defines import *
 from torchvision import transforms
-
+from models import Pix2PixHDGenerator
+from utils2 import *
 
 ############################################################################################################################################################
 # PER ESPORTARE IMPOSTARE: use_checkpoint: False
 ############################################################################################################################################################
-       
-############################################################################################################################################################
+
 if __name__ == '__main__':
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     data_attuale = datetime.now().strftime("%Y%m%d")
 
-    last_chk = os.path.join(Train_dir, "checkpoint.ckpt" )
-    last_q_chk = os.path.join(Train_dir, "checkpoint_quantized.pth" )
+    last_q_chk = os.path.join("checkpoint_quantized.pth")
     
-    onnx_file_fp32 = os.path.join(Train_dir, f"EyetronPre.onnx" )
-    onnx_file_fp32p = os.path.join(Train_dir, f"EyetronPre.pruned.onnx" )
-    onnx_file_uint8 = os.path.join(Train_dir, f"EyetronPre.uint8.onnx" )
+    onnx_file_fp32 = os.path.join("Cartonize.onnx")
+    onnx_file_fp32p = os.path.join("Cartonize.pruned.onnx")
+    onnx_file_uint8 = os.path.join("Cartonize.uint8.onnx")
 
     ############################################################################################
-    model = initialize_model(yaml_file)    
+    #model = initialize_model(yaml_file)    
+    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
+    ckpt = load_checkpoint(checkpoint_file, device)
+    if ckpt is not None:
+        G.load_state_dict(ckpt['G_state'])
+        #D.load_state_dict(ckpt['D_state'])
+        #opt_G.load_state_dict(ckpt['opt_G_state'])
+        #opt_D.load_state_dict(ckpt['opt_D_state'])
+        #train_losses = ckpt.get('train_losses', [])
+        #train_accuracies = ckpt.get('train_accuracies', [])
+        #val_accuracies = ckpt.get('val_accuracies', [])
+        #start_epoch = ckpt.get('epoch', 0) + 1
+        print(f"Ripreso da checkpoint {checkpoint_file}")
 
-    if os.path.exists(last_chk):
-        checkpoint = torch.load(last_chk, map_location="cpu", weights_only=False)
-        model.load_state_dict(checkpoint["state_dict"])
+
+    if os.path.exists(checkpoint_file):
+        model = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)      
+        checkpoint = torch.load(checkpoint_file, map_location="cpu", weights_only=False)
+        model.load_state_dict(checkpoint["G_state"])
 
         # After creating model1
-        model1 = model.gen_model()  # Ensure this returns a valid model instance
+        model1 = model  # Ensure this returns a valid model instance
         
         # Check if model1 is a valid instance of torch.nn.Module
         if isinstance(model1, torch.nn.Module):
