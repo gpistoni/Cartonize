@@ -71,7 +71,7 @@ def split_image(image_dir, out_dir, in_name, out_name, out_folder, tile_size, ti
             var_pop = np.var(arr)
             var_norm = var_pop / (255.0**2)
 
-            if ( var_norm > 0.005 ):
+            if ( var_norm > 0.003 ):
                 sub_imageMirrored = ImageOps.mirror(sub_image)
                 sub_imageRotated180 = sub_image.rotate(180)
 

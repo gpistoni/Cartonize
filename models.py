@@ -33,8 +33,10 @@ class GeneratorStage(nn.Module):
 class Pix2PixHDGenerator(nn.Module):
     def __init__(self, in_ch, out_ch, ngf):
         super().__init__()
-        self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_blocks=4)
-        self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_blocks=6)
+        #self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_blocks=4)
+        #self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_blocks=6)
+        self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_blocks=3)
+        self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_blocks=5)
     def forward(self,x):
         x_half = F.interpolate(x, scale_factor=0.5, mode='bilinear', align_corners=False)
         coarse = self.stage1(x_half)

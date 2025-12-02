@@ -11,12 +11,12 @@ class PairedGrayDataset(Dataset):
         self.transformA = T.Compose([
             T.Resize((loadSize, loadSize)),
             T.ToTensor(),
-            T.Normalize([0.5],[0.5])
+            #T.Normalize([0.5],[0.5])
         ])        
         self.transformB = T.Compose([
             T.Resize((loadSize, loadSize)),
             T.ToTensor(),
-            T.Normalize([0.5],[0.5])
+            #T.Normalize([0.5],[0.5])
         ]) 
 
     def __len__(self): 
