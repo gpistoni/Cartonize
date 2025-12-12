@@ -33,7 +33,7 @@ if __name__ == '__main__':
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     os.makedirs(trainOutput_dir, exist_ok=True)
 
-    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
+    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size, n_layer1=n_layer1, n_layer2=n_layer2 ).to(device)
     ckpt = torch.load(checkpoint_file, map_location=device)
     # if checkpoint contains state_dict under key:
     if 'state_dict' in ckpt:

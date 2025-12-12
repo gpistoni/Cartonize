@@ -27,7 +27,7 @@ def main():
 
     ############################################################################################
     #model = initialize_model(yaml_file)    
-    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
+    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size, n_layer1=n_layer1, n_layer2=n_layer2 ).to(device)
     if os.path.exists(checkpoint_file):
         ckpt = load_checkpoint(checkpoint_file, device)
         if ckpt is not None:
@@ -41,7 +41,7 @@ def main():
             #start_epoch = ckpt.get('epoch', 0) + 1
             print(f"Ripreso da checkpoint {checkpoint_file}")
 
-        model = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)      
+        model = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size, n_layer1=n_layer1, n_layer2=n_layer2).to(device)      
         checkpoint = torch.load(checkpoint_file, map_location="cpu", weights_only=False)
         model.load_state_dict(checkpoint["G_state"])
 

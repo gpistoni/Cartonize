@@ -15,7 +15,7 @@ class ResBlock(nn.Module):
     def forward(self,x): return x + self.block(x)
 
 class GeneratorStage(nn.Module):
-    def __init__(self, in_ch, out_ch, ngf=64, n_blocks=6):
+    def __init__(self, in_ch, out_ch, ngf, n_blocks):
         super().__init__()
         layers = [nn.Conv2d(in_ch, ngf, 7,1,3,bias=False), nn.InstanceNorm2d(ngf), nn.ReLU(True)]
         cur = ngf
@@ -31,12 +31,11 @@ class GeneratorStage(nn.Module):
     def forward(self,x): return self.model(x)
 
 class Pix2PixHDGenerator(nn.Module):
-    def __init__(self, in_ch, out_ch, ngf):
+    def __init__(self, in_ch, out_ch, ngf, n_layer1=4, n_layer2=6):
         super().__init__()
-        #self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_blocks=4)
-        #self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_blocks=6)
-        self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_blocks=3)
-        self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_blocks=5)
+        self.stage1 = GeneratorStage(in_ch, out_ch, ngf, n_layer1)
+        self.stage2 = GeneratorStage(in_ch + out_ch, out_ch, ngf, n_layer2)
+        
     def forward(self,x):
         x_half = F.interpolate(x, scale_factor=0.5, mode='bilinear', align_corners=False)
         coarse = self.stage1(x_half)

@@ -74,8 +74,8 @@ if __name__ == '__main__':
     dataset = PairedGrayDataset(args.dataroot, 'Train_Samples', block_size)
     dataloader = DataLoader(dataset, batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
-    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
-    D = NLayerDiscriminator(in_ch=2).to(device)
+    G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size, n_layer1=n_layer1, n_layer2=n_layer2 ).to(device)
+    D = NLayerDiscriminator(in_ch=2, ndf=64, n_layers=3 ).to(device)
 
     opt_G = optim.Adam(G.parameters(), lr=args.lr, betas=(0.5,0.999))
     opt_D = optim.Adam(D.parameters(), lr=args.lr, betas=(0.5,0.999))

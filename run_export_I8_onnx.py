@@ -20,7 +20,7 @@ def benchmark(model_path):
     so.intra_op_num_threads = 4
     so.inter_op_num_threads = 4
     
-    session = onnxruntime.InferenceSession(model_path, sess_options=so, providers=["OpenVINOExecutionProvider"])
+    session = onnxruntime.InferenceSession(model_path, sess_options=so)
     input_name = session.get_inputs()[0].name
     print("Providers:", session.get_providers())
 
