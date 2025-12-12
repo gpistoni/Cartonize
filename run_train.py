@@ -66,8 +66,6 @@ if __name__ == '__main__':
     parser.add_argument('--dataroot', type=str,  default='/home/giulipis/Dataset/Cartonize' )
     parser.add_argument('--lr', type=float, default=2e-4)
     parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--checkpoint', type=str, default='checkpoint.pth')
-    parser.add_argument('--resume', action='store_true', help='Riprendi dall ultimo checkpoint se presente')
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -94,8 +92,8 @@ if __name__ == '__main__':
     start_epoch = 0
 
     # -- Resume se richiesto --
-    if args.resume:
-        ckpt = load_checkpoint(args.checkpoint, device)
+    if checkpoint_resume:
+        ckpt = load_checkpoint(checkpoint_file, device)
         if ckpt is not None:
             G.load_state_dict(ckpt['G_state'])
             D.load_state_dict(ckpt['D_state'])
@@ -105,7 +103,7 @@ if __name__ == '__main__':
             train_accuracies = ckpt.get('train_accuracies', [])
             val_accuracies = ckpt.get('val_accuracies', [])
             start_epoch = ckpt.get('epoch', 0) + 1
-            print(f"Ripreso da checkpoint {args.checkpoint}, epoch {start_epoch}")
+            print(f"Ripreso da checkpoint {checkpoint_file}, epoch {start_epoch}")
 
     train_start_time = time.time()
        
@@ -175,8 +173,10 @@ if __name__ == '__main__':
             if i % 200 == 0:
                 # crea una griglia e salva
                 with torch.no_grad():
-                    fake_B, _ = G(real_A)   # real_A batch usato nel training
-                    save_side_by_side(real_A.cpu(), real_B.cpu(), fake_B.cpu(),  os.path.join(trainOutput_dir, f'compare_epoch{epoch}_Iter{i}.png'), nrow=4)
+                    real_A1 = real_A[:100]
+                    real_B1 = real_B[:100]
+                    fake_B1, _ = G(real_A1)   # real_A batch usato nel training
+                    save_side_by_side(real_A1.cpu(), real_B1.cpu(), fake_B1.cpu(),  os.path.join(trainOutput_dir, f'compare_epoch{epoch}_Iter{i}.png'), nrow=4)
 
 
         # Calcola la loss media per sample nell'epoca
@@ -198,5 +198,5 @@ if __name__ == '__main__':
             'val_accuracies': val_accuracies,
             'args': vars(args)
         }
-        save_checkpoint(ckpt_state, args.checkpoint)
-        print(f"Checkpoint salvato: {args.checkpoint}")
+        save_checkpoint(ckpt_state, checkpoint_file)
+        print(f"Checkpoint salvato: {checkpoint_file}")

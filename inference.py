@@ -24,7 +24,6 @@ def save_gray_tensor(tensor, out_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--checkpoint', required=True, help='path to generator .pth')
     parser.add_argument('--input', required=True, help='input image or folder')
     parser.add_argument('--out_dir', default='inference_out', help='output folder')
     parser.add_argument('--size', type=int, default=512, help='short side resize (square)')
@@ -35,7 +34,7 @@ if __name__ == '__main__':
     os.makedirs(trainOutput_dir, exist_ok=True)
 
     G = Pix2PixHDGenerator(in_ch=1, out_ch=1, ngf=block_size).to(device)
-    ckpt = torch.load(args.checkpoint, map_location=device)
+    ckpt = torch.load(checkpoint_file, map_location=device)
     # if checkpoint contains state_dict under key:
     if 'state_dict' in ckpt:
         G.load_state_dict(ckpt['state_dict'])

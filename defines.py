@@ -3,10 +3,12 @@ import os
 ############################################################################################################################################################
 datasetName = "Cartonize"
 block_size = 64
-batch_size = 1 + int(1e6 / (block_size*block_size))
+batch_size = 1 + int(4e6 / (block_size*block_size))
+
+checkpoint_resume = True
 
 ############################################################################################################################################################
-root_dir =  os.path.join('/' ,'home','giulipis' ,'Dataset' , datasetName)
+root_dir =  os.path.join('/' ,'home', 'giulipis' ,'Dataset' , datasetName)
 
 ############################################################################################################################################################
 fullImage_dir = os.path.join(root_dir, "Fullimages")
@@ -17,4 +19,6 @@ sample_dir_B =  os.path.join(sample_dir, "B")
 
 trainOutput_dir = os.path.join(root_dir, "Train_Output" )
 
-checkpoint_file ="checkpoint.pth"
+models_dir = os.path.join(root_dir, "Models")
+
+checkpoint_file = os.path.join(models_dir, "checkpoint.pth")

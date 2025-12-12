@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import VGG19_Weights
 
 adversarial_loss = nn.MSELoss()
 l1_loss = nn.L1Loss()
@@ -8,7 +9,9 @@ l1_loss = nn.L1Loss()
 class VGGLoss(nn.Module):
     def __init__(self, device='cpu'):
         super().__init__()
-        vgg = models.vgg19(pretrained=True).features.to(device).eval()
+        weights = VGG19_Weights.IMAGENET1K_V1
+        vgg = models.vgg19(weights=weights).features.to(device).eval()
+        #vgg = models.vgg19(pretrained=True).features.to(device).eval()
         for p in vgg.parameters(): p.requires_grad = False
         self.vgg = vgg
         self.criterion = nn.L1Loss()
