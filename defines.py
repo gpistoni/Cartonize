@@ -2,14 +2,14 @@ import os
 
 ############################################################################################################################################################
 datasetName = "Cartonize"
-block_size = 64
-batch_size = 1 + int(4e6 / (block_size*block_size))
+block_size = 256
+batch_size = 20
 
 # Model deep
 n_layer1=3
 n_layer2=2
 
-checkpoint_resume = True
+checkpoint_resume = False
 
 ############################################################################################################################################################
 root_dir =  os.path.join('/' ,'home', 'giulipis' ,'Dataset' , datasetName)

@@ -52,7 +52,8 @@ def split_image(image_dir, out_dir, in_name, out_name, out_folder, tile_size, ti
 
     img_width, img_height = image.size
      
-    image = ImageOps.expand(image, border=32, fill='black')
+    # aggiunge un bordo
+    #image = ImageOps.expand(image, border=32, fill='black')
     
     # Assicurati che la cartella di output esista
     os.makedirs(output_folder, exist_ok=True)
@@ -69,9 +70,8 @@ def split_image(image_dir, out_dir, in_name, out_name, out_folder, tile_size, ti
             arr = np.array(sub_image, dtype=np.float64)  # evita overflow
             # varianza popolazione (ddof=0)
             var_pop = np.var(arr)
-            var_norm = var_pop / (255.0**2)
 
-            if ( var_norm > 0.003 ):
+            if ( var_pop > 500 ):
                 sub_imageMirrored = ImageOps.mirror(sub_image)
                 sub_imageRotated180 = sub_image.rotate(180)
 
